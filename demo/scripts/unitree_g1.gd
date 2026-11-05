@@ -2,7 +2,8 @@
 extends Node3D
 
 const MODEL_DIR := "res://models/mujoco_menagerie/unitree_g1/"
-const MODEL := MODEL_DIR + "scene.xml"
+@export var model_dir := MODEL_DIR
+@export var mesh_dir := "assets/"
 
 var world: MjWorld
 var links: Dictionary[int, Node3D]
@@ -13,11 +14,12 @@ var step_budget := 0.0
 
 
 func _ready() -> void:
-	var has_assets := FileAccess.file_exists(MODEL)
+	var model_path := model_dir + "scene.xml"
+	var has_assets := FileAccess.file_exists(model_path)
 	if has_assets:
 		for child in $Robot.find_children("*", "MeshInstance3D"):
 			var visual := child as MeshInstance3D
-			visual.mesh = load_stl(MODEL_DIR + "assets/" + str(visual.get_meta("stl")))
+			visual.mesh = load_stl(model_dir + mesh_dir + str(visual.get_meta("stl")))
 			var material := StandardMaterial3D.new()
 			material.albedo_color = Color("#26313d") if visual.get_meta("dark") else Color("#a6bdcb")
 			material.roughness = 0.43
@@ -25,11 +27,11 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 	if not has_assets:
-		fail("Missing Unitree G1 model under " + MODEL_DIR)
+		fail("Missing Unitree G1 model under " + model_dir)
 		return
 	world = MjWorld.new()
 	add_child(world)
-	if not world.load_model(MODEL):
+	if not world.load_model(model_path):
 		fail(world.get_last_error())
 		return
 	for child in $Robot.find_children("*", "Node3D"):

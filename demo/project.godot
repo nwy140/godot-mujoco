@@ -12,6 +12,7 @@ config_version=5
 
 config/name="Godot MuJoCo GDExtension Demo"
 run/main_scene="res://Main.tscn"
+run/main_scene.g1_walk="res://UnitreeG1Walk.tscn"
 config/features=PackedStringArray("4.7")
 
 [dotnet]

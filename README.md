@@ -392,3 +392,38 @@ To verify the simulation from the repository root:
 ```powershell
 godot --headless --path demo --quit-after 480 res://UnitreeG1.tscn -- --g1-smoke
 ```
+
+### Unitree G1 Walk Lab
+
+Open `demo/UnitreeG1Walk.tscn` in the demo project and press **F6**.
+The G1 patrols four waypoints by default, slowing down and waiting at each
+marker. Hold **W/S** to walk forward or backward and **A/D** to turn.
+**P** toggles patrol, **E** toggles facing the camera, **Space** pauses, and
+**R** resets after a fall.
+
+This scene bundles Unitree RL Gym's matching 12-actuator G1 model and mesh
+assets separately from the 29-DoF Menagerie fall test. The policy runs in
+GDScript as a 64-state LSTM and a two-layer actor. MuJoCo steps at 500 Hz
+and the policy updates every ten steps. The behavior script sends desired
+body-frame speed and yaw rate. The policy sets joint position targets and
+a PD loop applies torques. Godot and the exported game require no Python
+process or machine learning runtime.
+
+The model and weights come from [Unitree RL Gym](https://github.com/unitreerobotics/unitree_rl_gym/tree/276801e46c5d433564f24658bac64f254b7d2d4b).
+See `demo/models/g1_walk/LICENSE.txt` for the redistribution terms.
+The bundled `policy.bin` stores the original checkpoint tensors in
+little-endian float32, flattened in row order. The tensor order is
+`memory.weight_ih_l0`, `memory.weight_hh_l0`, `memory.bias_ih_l0`,
+`memory.bias_hh_l0`, `actor.0.weight`, `actor.0.bias`, `actor.2.weight`,
+`actor.2.bias`. Its SHA-256 is
+`77056bd2f7f819cba00d5b6b76eb2ec66d42d8b4a4f5b258aeac8ea655c2875a`.
+
+Run the headless patrol, facing, and idle check from the repository root:
+
+```powershell
+godot --headless --path demo --quit-after 360 res://UnitreeG1Walk.tscn -- --g1-walk-smoke
+```
+
+The **G1 Walk Windows** preset starts directly in this scene. Export it
+with both extension variants staged and the matching Windows templates
+installed. Keep the two bundled DLLs and license notices beside the EXE.
