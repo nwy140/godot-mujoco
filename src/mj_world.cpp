@@ -32,29 +32,26 @@ void MjWorld::free_model() {
 // to the model's base directory, so MJCF <include> files and mesh/texture
 // assets resolve. Reads through Godot's filesystem so it works from res://.
 static void gmj_add_dir_to_vfs(mjVFS *vfs, const String &dir, const String &rel_prefix, int &added) {
-	Ref<DirAccess> da = DirAccess::open(dir);
-	if (da.is_null()) {
-		return;
+	// Static queries avoid wrapping a platform-specific DirAccess instance.
+	const PackedStringArray directories = DirAccess::get_directories_at(dir);
+	for (int64_t i = 0; i < directories.size(); ++i) {
+		const String name = directories[i];
+		gmj_add_dir_to_vfs(vfs, dir.path_join(name), rel_prefix + name + String("/"), added);
 	}
-	da->list_dir_begin();
-	String fn = da->get_next();
-	while (!fn.is_empty()) {
-		if (da->current_is_dir()) {
-			if (fn != "." && fn != "..") {
-				gmj_add_dir_to_vfs(vfs, dir.path_join(fn), rel_prefix + fn + String("/"), added);
-			}
-		} else if (!fn.ends_with(".import") && !fn.ends_with(".uid")) {
-			const PackedByteArray b = FileAccess::get_file_as_bytes(dir.path_join(fn));
-			if (!b.is_empty()) {
-				const CharString key = (rel_prefix + fn).utf8();
-				if (mj_addBufferVFS(vfs, key.get_data(), b.ptr(), (int)b.size()) == 0) {
-					++added;
-				}
+	const PackedStringArray files = DirAccess::get_files_at(dir);
+	for (int64_t i = 0; i < files.size(); ++i) {
+		const String name = files[i];
+		if (name.ends_with(".import") || name.ends_with(".uid")) {
+			continue;
+		}
+		const PackedByteArray bytes = FileAccess::get_file_as_bytes(dir.path_join(name));
+		if (!bytes.is_empty()) {
+			const CharString key = (rel_prefix + name).utf8();
+			if (mj_addBufferVFS(vfs, key.get_data(), bytes.ptr(), (int)bytes.size()) == 0) {
+				++added;
 			}
 		}
-		fn = da->get_next();
 	}
-	da->list_dir_end();
 }
 
 bool MjWorld::commit_vfs_model(mjVFS_ *vfs, const String &main_name) {
