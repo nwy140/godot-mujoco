@@ -373,3 +373,22 @@ Focused on being a solid MuJoCo integration for Godot:
 - Optional `Node3D` base so the sim can compose with a scene-graph transform.
 - Android/iOS **device runtime** (Godot export + `adb`/`xcrun` smoke on an
   emulator or phone). Compile proof is already in CI — see [Mobile](#mobile-ios--android).
+
+### Unitree G1 fall test
+
+Open `demo/project.godot`, select `UnitreeG1.tscn`, and press **F6**. The
+editor previews the robot in its rest pose using the original binary STL
+meshes. In play, the Menagerie G1 starts slightly tilted and above the floor.
+MuJoCo drives all 30 body poses. The example has no balance controller.
+Press **Space** to pause or resume, **N** to step once, and **R** to reset.
+
+The scene uses the local [MuJoCo Menagerie](https://github.com/google-deepmind/mujoco_menagerie)
+checkout at `demo/models/mujoco_menagerie` (tested at `98a70c569c4c1b6da467a20012f766ee1f8dc521`).
+Keep `unitree_g1/scene.xml`, `g1.xml`, and the `assets/` folder together.
+The model's redistribution terms are in `unitree_g1/LICENSE`.
+
+To verify the simulation from the repository root:
+
+```powershell
+godot --headless --path demo --quit-after 480 res://UnitreeG1.tscn -- --g1-smoke
+```
